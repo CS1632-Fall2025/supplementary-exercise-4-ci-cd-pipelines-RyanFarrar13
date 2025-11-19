@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.github.wonsunahn</groupId>
-  <artifactId>cs1632-cicd-pipelines</artifactId>
+  <artifactId>cs1632-cicd-pipelines-ryf</artifactId>
   <version>1.0</version>
   <packaging>jar</packaging>
 
@@ -34,6 +34,12 @@
     <developerConnection>scm:git:ssh://github.com:wonsunahn/CS1632_CICD_JUnit.git</developerConnection>
     <url>http://github.com/wonsunahn/CS1632_CICD_JUnit/tree/master</url>
   </scm>
+
+
+
+
+
+
 
   <properties>
     <maven.compiler.source>11</maven.compiler.source>

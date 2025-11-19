@@ -41,25 +41,28 @@ public class RentACatIntegrationTest {
 		// Passing InstanceType.IMPL as the first parameter will create a real RentACat object using your RentACatImpl implementation.
 		// Passing InstanceType.MOCK as the first parameter will create a mock RentACat object using Mockito.
 		// Which type is the correct choice for this integration test?  I'll leave it up to you.  The answer is in the Unit Testing Part 2 lecture. :)
-		// TODO: Fill in
-
+		// TODO: Fill in def want to use real rentacat because this is an integration test
+		r = RentACat.createInstance(InstanceType.IMPL);
 		// 2. Create a Cat with ID 1 and name "Jennyanydots", assign to c1 using a call to Cat.createInstance(InstanceType, int, String).
 		// Passing InstanceType.IMPL as the first parameter will create a real cat using your CatImpl implementation.
 		// Passing InstanceType.MOCK as the first parameter will create a mock cat using Mockito.
 		// Which type is the correct choice for this integration test?  Again, I'll leave it up to you.
 		// TODO: Fill in
-
+		//using real cats now
+		c1 = Cat.createInstance(InstanceType.IMPL, 1, "Jennyanydots");
 		// 3. Create a Cat with ID 2 and name "Old Deuteronomy", assign to c2 using a call to Cat.createInstance(InstanceType, int, String).
 		// TODO: Fill in
-
+		c2 = Cat.createInstance(InstanceType.IMPL, 2, "Old Deuteronomy");
 		// 4. Create a Cat with ID 3 and name "Mistoffelees", assign to c3 using a call to Cat.createInstance(InstanceType, int, String).
 		// TODO: Fill in
-		
+		c3 = Cat.createInstance(InstanceType.IMPL, 3, "Mistoffelees");
 		// 5. Redirect system output from stdout to the "out" stream
 		// First, make a back up of System.out (which is the stdout to the console)
 		stdout = System.out;
 		// Second, update System.out to the PrintStream created from "out"
 		// TODO: Fill in.  Refer to the textbook chapter 14.6 on Testing System Output.
+		out = new ByteArrayOutputStream();
+		System.setOut(new PrintStream(out));
 	}
 
 	@After
@@ -93,6 +96,18 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testGetCatNullNumCats0() {
 		// TODO: Fill in
+		//same as before, 
+
+		out.reset();
+		try {
+   			java.lang.reflect.Method m = r.getClass().getDeclaredMethod("getCat", int.class);
+   	 		m.setAccessible(true);
+    		Object got = m.invoke(r, 2);
+    		assertNull(got);
+    		assertEquals("Invalid cat ID." + newline, out.toString());
+		} catch (Exception e) {
+    		fail("Reflection failed: " + e);
+		}
 	}
 
 	/**
@@ -112,7 +127,22 @@ public class RentACatIntegrationTest {
 	 */
 	@Test
 	public void testGetCatNumCats3() {
-		// TODO: Fill in
+	// TODO: Fill in
+	//same b with real cats
+	try {
+    	r.addCat(c1);
+   	 	r.addCat(c2);
+    	r.addCat(c3);
+
+    	java.lang.reflect.Method m = r.getClass().getDeclaredMethod("getCat", int.class);
+    	m.setAccessible(true);
+    	Cat got = (Cat) m.invoke(r, 2);
+
+    	assertNotNull(got);
+    	assertEquals(2, got.getId());
+		} catch (Exception e) {
+    		fail("Reflection failed: " + e);
+		}
 	}
 
 	/**
@@ -127,6 +157,9 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testListCatsNumCats0() {
 		// TODO: Fill in
+		//1 for 1
+		String s = r.listCats();
+		assertEquals("", s);
 	}
 
 	/**
@@ -142,6 +175,12 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testListCatsNumCats3() {
 		// TODO: Fill in
+		r.addCat(c1);
+		r.addCat(c2);
+		r.addCat(c3);
+
+		String s = r.listCats();
+		assertEquals("ID 1. Jennyanydots\n" +"ID 2. Old Deuteronomy\n" +"ID 3. Mistoffelees\n", s);
 	}
 
 	/**
@@ -158,6 +197,11 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testRenameFailureNumCats0() {
 		// TODO: Fill in
+		//no verifying mocks
+		out.reset();
+		boolean ok = r.renameCat(2, "Garfield");
+		assertFalse(ok);
+		assertEquals("Invalid cat ID." + newline, out.toString());
 	}
 
 	/**
@@ -173,6 +217,12 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testRenameNumCat3() {
 		// TODO: Fill in
+		r.addCat(c1);//real cat 
+		r.addCat(c2);
+		r.addCat(c3);
+		boolean ok = r.renameCat(2, "Garfield");//actually rename the cat
+		assertTrue(ok);
+		assertEquals("Garfield", c2.getName());
 	}
 
 	/**
@@ -189,7 +239,17 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testRentCatNumCats3() {
 		// TODO: Fill in
-	}
+		out.reset();
+		r.addCat(c1);
+		r.addCat(c2);
+		r.addCat(c3);
+
+		boolean ok = r.rentCat(2);//check real
+		assertTrue(ok);
+		assertTrue(c2.getRented());
+
+		assertEquals("Old Deuteronomy has been rented." + newline, out.toString());
+		}
 
 	/**
 	 * Test case for boolean rentCat(int id).
@@ -206,6 +266,20 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testRentCatFailureNumCats3() {
 		// TODO: Fill in
+		out.reset();
+
+		r.addCat(c1);
+		r.addCat(c2);
+		r.addCat(c3);
+
+		assertTrue(r.rentCat(2));//no more faking   get rented return value
+		assertTrue(c2.getRented());
+
+		out.reset();
+		boolean ok = r.rentCat(2);
+		assertFalse(ok);
+		assertTrue(c2.getRented()); // stays rented
+		assertEquals("Sorry, Old Deuteronomy is not here!" + newline, out.toString());
 	}
 
 	/**
@@ -223,6 +297,19 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testReturnCatNumCats3() {
 		// TODO: Fill in
+		out.reset();
+		r.addCat(c1);
+		r.addCat(c2);
+		r.addCat(c3);
+		assertTrue(r.rentCat(2));
+		assertTrue(c2.getRented());
+
+		out.reset();//again, actually use the functions now
+		boolean Ok = r.returnCat(2);
+		assertTrue(Ok);
+		assertFalse(c2.getRented());
+
+		assertEquals("Welcome back, Old Deuteronomy!" + newline, out.toString());
 	}
 
 	/**
@@ -239,6 +326,18 @@ public class RentACatIntegrationTest {
 	@Test
 	public void testReturnFailureCatNumCats3() {
 		// TODO: Fill in
+		out.reset();
+
+		r.addCat(c1);
+		r.addCat(c2);
+		r.addCat(c3);
+
+		assertFalse(c2.getRented());//check not rented
+		boolean Ok = r.returnCat(2);
+		assertFalse(Ok);
+		assertFalse(c2.getRented());
+
+		assertEquals("Old Deuteronomy is already here!" + newline, out.toString());
 	}
 
 }
